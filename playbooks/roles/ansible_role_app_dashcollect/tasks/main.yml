@@ -1,0 +1,72 @@
+# Tasks file for  ansible_role_app_datacollecter role
+
+# add repo containing mongodb tools
+- name: "ansible_role_app_datacollecter | Add MongoDB Tools Repository"
+  yum_repository:
+    name: mongodb-org-tools
+    description: MongoDB Tools Repository
+    baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/7.0/x86_64/
+    gpgcheck: yes
+    gpgkey: https://www.mongodb.org/static/pgp/server-7.0.asc
+    enabled: yes
+    state: present
+  when: ansible_os_family == "RedHat"
+
+# Install MongoDB Tools
+- name: "ansible_role_app_datacollecter | Install MongoDB Tools"
+  dnf:
+    name: mongodb-org-tools
+    state: present
+  when: ansible_os_family == "RedHat"
+
+
+
+# Check if the database is already initialized
+- name: "ansible_role_app_datacollecter | read the database password in /tmp/pg_password.txt file on the localhost"
+  local_action:
+    module: slurp
+    src: "/tmp/pg_password.txt"
+  register: db_password
+
+- name: "ansible_role_app_datacollecter | Install python3-psycopg2 package"
+  dnf: 
+    name:  ["python3-psycopg2", "postgresql" ] 
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: "ansible_role_app_datacollecter | Check access to the database"
+  postgresql_ping:
+    login_host: "{{ db_host }}"
+    login_user: "dash"
+    login_password: "{{ db_password }}"
+    login_db: "dash"
+  register: postgres_ping_result
+
+- name: Display PostgreSQL ping result
+  debug:
+    var: postgres_ping_result
+
+- name: "ansible_role_app_datacollecter | Create the unix dash user"
+  user:
+    name: dash
+    state: present
+    shell: /bin/bash
+    createhome: yes
+    home: /home/dash
+    password: "{{ db_password }}"
+  
+- name: "ansible_role_app_datacollecter | install git"
+  dnf:
+    name: git
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: "ansible_role_app_datacollecter | Clone the dashcollect repository"
+  git:
+    repo:
+      - "
+  
+
+    
+
+

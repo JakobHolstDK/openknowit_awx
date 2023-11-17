@@ -1,0 +1,53 @@
+[project]
+name = "dash"
+version = "0.0.2"
+description = "server usage dashboarding"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = [ "dashboarding",]
+classifiers = [ "Development Status :: 3 - Alpha", "Intended Audience :: Developers", "Topic :: Software Development :: Libraries :: Python Modules", "License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3",]
+dependencies = [ "redis", "flask", "pynetbox", "wheel", "xmltodict", "netbox", "urllib3", "cryptography", "PyYAML",]
+[[project.authors]]
+name = "Jakob Holst"
+email = "rks221@it.ku.dk"
+
+[[project.maintainers]]
+name = "Jakob Holst"
+email = "rks221@it.ku.dk"
+
+[build-system]
+requires = [ "setuptools>=43.0.0", "wheel",]
+build-backend = "setuptools.build_meta"
+
+[project.license]
+file = "LICENSE.txt"
+
+[project.optional-dependencies]
+dev = [ "check-manifest",]
+test = [ "coverage",]
+
+[project.urls]
+
+[project.scripts]
+dash = "dash:main"
+dash_bump = "dash.bump:main"
+
+[tool.poetry]
+name = "dash"
+version = "0.0.2"
+description = "KU it forskningstøtte dashboarding"
+authors = [ "Jakob Holst <jakob.holst@knowit.dk>",]
+license = "MIT"
+repository = "https://git.ku.dk/ku-it/ansible/playbooks/dash.git"
+
+[tool.poetry.scripts]
+dash = "dash:main"
+dash_bump = "dash.bump:main"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+redis = "^4.3.6"
+requests = "^2.31.0"
+ 
+[tool.setuptools.package-data]
+dash = [ "*.dat",]

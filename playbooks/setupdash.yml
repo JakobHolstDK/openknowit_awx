@@ -1,0 +1,67 @@
+- name: "All | Set hostname to ansbile_hostname and update apt "
+  hosts: all
+  become: true
+  become_method: sudo
+  become_user: root
+  tasks:
+    - name: Set hostname to ansbile_hostname
+      hostname:
+        name: "{{ ansible_hostname }}"
+      tags: hostname
+
+    - name: Upgrade all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+      when: ansible_os_family == "RedHat"
+      tags: upgrade
+
+
+
+- name: "Database | Install databases"
+  hosts: [database]
+  become: true
+  become_method: sudo
+  become_user: root
+  vars:
+    databasetypes:    [ "mysql", "postgresql", "mongodb", "influx", "redis" ]
+    pg_databases:     [ "dash", "ckan", "airflow" ]
+    mongo_databases:  [ "dash", "ckan", "airflow" ]
+    influx_databases: [ "dash", "ckan", "airflow" ]
+    redis_databases:  [ "dash", "ckan", "airflow" ]
+  tasks:
+    - name: Install Databases
+      include_role:
+        name: "ansible_role_database_{{ item }}"
+      with_items: "{{ databasetypes }}"
+
+- name: "app | Install app services"
+  hosts: [app]
+  become: true
+  become_method: sudo
+  become_user: root
+  vars:
+  tasks:
+    - name: Install app services
+      include_role:
+        name: "ansible_role_app_{{ item }}"
+      with_items: "{{ apptypes }}"
+
+
+- name: "web | Install web services"
+  hosts: [web]
+  become: true
+  become_method: sudo
+  become_user: root
+  vars:
+    webtypes:  [ "grafana", "dashapi", "airflow", "ckan" ]
+  tasks:
+    - name: Install web services
+      include_role:
+        name: "ansible_role_web_{{ item }}"
+      with_items: "{{ webtypes }}"
+
+
+
+
+      

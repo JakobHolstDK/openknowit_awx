@@ -1,0 +1,19 @@
+[all]
+dashdb01
+dashapp01
+dashweb01
+dashweb02
+dashweb03
+
+[web]
+dashweb01
+dashweb01
+dashweb01
+
+[app]
+dashapp01 db_host="dashdb01.openknowit.com", apptypes='[ "ckan", "dashcollect", "airflow" ]'
+
+
+[database]
+dashdb01
+

@@ -1,0 +1,2 @@
+# Defaults file for Ansible_role_database_posgresql role
+pg_database_name: mydatabase

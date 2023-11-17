@@ -1,0 +1,8 @@
+venv/
+build/
+secret/ 
+src/kalm.egg-info/
+src/kalm.egg-info/SOURCES.txt
+**/__pycache__/
+inabox.json
+preseed.cfg

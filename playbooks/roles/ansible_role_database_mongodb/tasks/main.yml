@@ -1,0 +1,93 @@
+# Tasks file for Ansible_role_database_mongodb role
+#add repo containing mongodb
+
+- name: "Add MongoDB Repository"
+  yum_repository:
+    name: mongodb-org
+    description: MongoDB Repository
+    baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/7.0/x86_64/
+    gpgcheck: yes
+    gpgkey: https://www.mongodb.org/static/pgp/server-7.0.asc
+    enabled: yes
+    state: present
+  become: True
+  become_method: sudo
+  become_user: root
+  tags: [mongodb, mongodb_repo]
+
+
+- name: Install MongoDB
+  dnf:
+    name: mongodb-org
+    state: present
+  become: True
+  become_method: sudo
+  become_user: root
+  tags: [mongodb, mongodb_install]
+
+# enable mongodb service
+- name: Enable MongoDB Service
+  service:
+    name: mongod
+    state: started
+    enabled: yes
+  become: True
+  become_method: sudo
+  become_user: root
+  tags: [mongodb, mongodb_service]
+
+# start mongodb service
+- name: Start MongoDB Service
+  service:
+    name: mongod
+    state: started
+    enabled: yes
+  become: True
+  become_method: sudo
+  become_user: root
+  tags: [mongodb, mongodb_service]
+
+  # open firewall for mongodb
+- name: Open Firewall for MongoDB
+  firewalld:
+    service: mongodb
+    permanent: yes
+    state: enabled
+    immediate: yes
+  become: True
+  become_method: sudo
+  become_user: root
+  tags: [mongodb, mongodb_firewall]
+
+  # make mongo listen on all interfaces
+ #   bindIp: 127.0.0.1  # Enter 0.0.0.0,:: to bind to all IPv4 and IPv6 addresses or, alternatively, use the net.bindIpAll setting.
+#- name: Make MongoDB listen on all interfaces
+#  lineinfile:
+#    path: /etc/mongod.conf
+#    regexp: '^#?bindIp:.*'
+#    line: 'bindIp:  0.0.0.0'
+#  become: True
+#  become_method: sudo
+#
+#
+  # restart mongodb service
+- name: Restart MongoDB Service
+  service:
+    name: mongod
+    state: restarted
+    enabled: yes
+  become: True
+  become_method: sudo
+  become_user: root
+  tags: [mongodb, mongodb_service]
+
+  # create admin user
+
+# Install MongoDB Tools
+- name: "ansible_role_app_datacollecter | Install MongoDB Tools"
+  dnf:
+    name: mongodb-org-tools
+    state: present
+  when: ansible_os_family == "RedHat"
+
+

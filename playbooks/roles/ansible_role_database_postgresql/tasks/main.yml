@@ -1,0 +1,92 @@
+
+
+
+#check if we are on a supppored OS
+- name: "ansible_role_database_postgresql | Check if we are on a supported OS"
+  fail:
+    msg: "This role only works on Fedora, CentOS, and RedHat"
+  when: ansible_os_family not in ['Fedora', 'RedHat', 'CentOS']
+
+- name: "ansible_role_databasae_postgresql | Install PostgreSQL"
+  dnf: 
+    name: ["postgresql-server" , "python3-psycopg2"] 
+    state: present
+
+# Check if the database is already initialized
+- name: "ansible_role_database_postgresql | Check if the database is already initialized"
+  stat:
+    path: /var/lib/pgsql/data/PG_VERSION
+  register: db_initialized
+
+- name: "ansible_role_database_postgresql | Initialize the database"
+  command: postgresql-setup initdb
+  when: not db_initialized.stat.exists
+
+- name: Allow postgres user to connect via password authentication
+  lineinfile:
+    path: "/var/lib/pgsql/data/pg_hba.conf"
+    regexp: '^host\s+all\s+postgres\s+'
+    line: 'host    all             postgres        0.0.0.0/0               md5'
+
+
+# #listen_addresses = 'localhost'         # what IP address(es) to listen on; need to be changed to listen on *
+- name: "ansible_role_database_postgresql | Change the listen_addresses to *"
+  lineinfile:
+    path: "/var/lib/pgsql/data/postgresql.conf"
+    regexp: '^#listen_addresses ='
+    line: "listen_addresses = '*'"
+    state: present
+    backup: yes
+
+
+# start the database service
+- name: "ansible_role_database_postgresql | Start the database"
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+
+# create the database : do this as postgres user
+
+- name: "ansible_role_database_postgresql | Create the database"
+  become: true
+  become_user: postgres
+  postgresql_db:
+
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ pg_databases }}"
+
+
+
+# generate a random password locally
+- name: "ansible_role_database_postgresql | Generate a random password"
+  local_action: 
+      command pwgen -N 1 -s 32
+  register: pg_database_password
+
+- name: "ansible_role_database_postgresql | Create the database user"
+  become: true
+  become_user: postgres
+  postgresql_user:
+    name: "{{ item }}"
+    db: "{{ item }}"
+    password: "{{ pg_database_password }}"
+    priv: "ALL"
+    role_attr_flags: "CREATEDB"
+    state: present
+  with_items: "{{ pg_databases }}"
+
+- name: "ansible_role_database_postgresql | save the password locally"
+  copy:
+    dest: /tmp/pg_password.txt
+    content: "{{ pg_database_password.stdout }}"
+  delegate_to: localhost
+
+- name: "ansible_role_database_postgresql | set the firewall to accept connections"
+  firewalld:
+    service: postgresql
+    permanent: yes
+    state: enabled
+    immediate: yes
